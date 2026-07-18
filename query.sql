@@ -13,7 +13,7 @@ select cst_id, cst_key, cst_firstname , cst_gndr from bronze.crm_cust_info Where
 
 select * from bronze.crm_prd_info;
 
-select * from bronze.crm_prd_info where prd_line = 'R '
+select * from bronze.crm_prd_info where prd_line = 'R ' 
 
 -- crm_prd_info table se sirf woh products dikhao jinka prd_line = 'R' (Road bikes?).
 
@@ -88,4 +88,18 @@ SELECT DISTINCT ON (sls_price) *
 
 FROM bronze.crm_sales_details
 ORDER BY sls_price DESC, sls_ord_num limit 5
+
+
+
+SELECT ROUND(AVG(sls_sales), 2) AS avg_order_value
+FROM bronze.crm_sales_details;
+
+
+select * from bronze.crm_sales_details
+select * from bronze.erp_cust_az12;
+select * from bronze.loc_a101;
+select * from bronze.erp_px_cat_g1v2;
+
+
+
 

@@ -1,0 +1,65 @@
+1. ORDER BY (Sabse Simple)
+Matlab:
+Result ko sort (arrange) karna — chhote se bade ya bade se chhote order mein.
+Kab use karte hain?
+Jab tumhe data ascending (A to Z / chhota se bada) ya descending (Z to A / bada se chhota) mein chahiye.
+Syntax:
+
+SQLSELECT column1, column2
+FROM table_name
+ORDER BY column_name ASC/DESC;
+
+SELECT prd_key, prd_nm, prd_cost
+FROM bronze.crm_prd_info
+ORDER BY prd_cost ASC;     -- ASC = Ascending (chhota pehle)
+
+
+
+2. Group BY
+
+Matlab:
+Rows ko groups mein baantna jinke same values hain.
+Kab use karte hain?
+Jab tumhe aggregate (summary) chahiye jaise:
+
+Kitne customers male hain?
+Har product ki total sales kitni hai?
+Har city mein kitne customers hain?
+
+Important Rule:
+GROUP BY ke saath aggregate functions use karte hain jaise:
+
+COUNT()
+SUM()
+AVG()
+MIN()
+
+SELECT column1, aggregate_function(column2)
+FROM table_name
+GROUP BY column1;
+
+SELECT 
+    cst_gndr,
+    COUNT(*) AS total_customers
+FROM bronze.crm_cust_info
+GROUP BY cst_gndr;
+
+
+SELECT 
+    cst_gndr,
+    cst_marital_status,
+    COUNT(*) AS total_customers
+FROM bronze.crm_cust_info
+GROUP BY cst_gndr, cst_marital_status;   -- ✅ Sahi (dono columns GROUP BY mein)
+
+Rule Samjho (Golden Rule of GROUP BY)
+Rule:
+SELECT mein jo bhi non-aggregate columns hain (matlab jo aggregate function ke saath nahi hain), un sabko GROUP BY mein daalna padega.
+
+
+3. ROUND(number, decimal_places)
+ROUND(486.102345, 2)486.102 decimal places
+
+
+
+

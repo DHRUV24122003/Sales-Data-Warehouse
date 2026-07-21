@@ -42,3 +42,26 @@ select c.cst_id,
        group by c.cst_id, c.cst_firstname, c.cst_lastname,c.cst_gndr order by total_sales  desc;
 
 
+--Q3. Sirf woh customers dikhao jinhone koi order nahi diya (LEFT JOIN use kar).
+SELECT 
+    c.cst_id,
+    c.cst_firstname || ' ' || c.cst_lastname AS customer_name,
+    c.cst_gndr,
+    s.sls_ord_num
+FROM bronze.crm_cust_info c
+LEFT JOIN bronze.crm_sales_details s 
+    ON c.cst_id = s.sls_cust_id
+LIMIT 20;
+
+
+
+SELECT 
+    c.cst_id,
+    c.cst_firstname || ' ' || c.cst_lastname AS customer_name,
+    c.cst_gndr
+FROM bronze.crm_cust_info c
+LEFT JOIN bronze.crm_sales_details s 
+    ON c.cst_id = s.sls_cust_id
+WHERE s.sls_ord_num IS NULL          
+ORDER BY c.cst_id
+LIMIT 20;

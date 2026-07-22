@@ -65,3 +65,15 @@ LEFT JOIN bronze.crm_sales_details s
 WHERE s.sls_ord_num IS NULL          
 ORDER BY c.cst_id
 LIMIT 20;
+
+
+--total sales of individual products
+SELECT 
+    p.prd_key,
+    p.prd_nm AS product_name,
+    SUM(s.sls_sales) AS total_sales
+FROM bronze.crm_sales_details s
+INNER JOIN bronze.crm_prd_info p 
+    ON s.sls_prd_key = p.prd_key
+GROUP BY p.prd_key, p.prd_nm
+ORDER BY total_sales DESC;

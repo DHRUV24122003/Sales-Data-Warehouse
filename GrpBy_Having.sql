@@ -151,3 +151,15 @@ INNER JOIN bronze.crm_cust_info c
 GROUP BY c.cst_id, c.cst_firstname, c.cst_lastname
 ORDER BY total_sales DESC
 LIMIT 10;
+
+
+
+SELECT
+    c.cst_id,
+    c.cst_firstname || ' ' || c.cst_lastname AS customer_name,
+    c.cst_gndr
+FROM bronze.crm_cust_info c          -- Left Table (saare customers)
+LEFT JOIN bronze.crm_sales_details s  -- Right Table (orders)
+    ON c.cst_id = s.sls_cust_id
+WHERE s.sls_ord_num IS NULL           -- Sirf NULL wale (no order)
+ORDER BY c.cst_id;

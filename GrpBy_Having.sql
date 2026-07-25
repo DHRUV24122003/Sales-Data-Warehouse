@@ -163,3 +163,38 @@ LEFT JOIN bronze.crm_sales_details s  -- Right Table (orders)
     ON c.cst_id = s.sls_cust_id
 WHERE s.sls_ord_num IS NULL           -- Sirf NULL wale (no order)
 ORDER BY c.cst_id;
+
+--join the product and sales together and find out the total sales and name of the product
+
+select * from bronze.crm_prd_info;
+select * from bronze.crm_sales_details;
+--prd key is common
+select p.prd_key,
+       p.prd_nm,
+       sum(sls_sales) as total_sales
+       from bronze.crm_sales_details s
+left join bronze.crm_prd_info p
+ON   s.sls_prd_key = p.prd_key where p.prd_key IS NOT NULL GROUP BY p.prd_key, p.prd_nm
+ORDER BY total_sales DESC;
+
+
+SELECT
+    p.prd_key,
+    p.prd_nm AS product_name,
+    SUM(s.sls_sales) AS total_sales
+FROM bronze.crm_prd_info p
+INNER JOIN bronze.crm_sales_details s
+    ON  p.prd_key =  s.sls_prd_key
+GROUP BY p.prd_key, p.prd_nm
+ORDER BY total_sales DESC;
+
+
+SELECT
+    p.prd_key,
+    p.prd_nm AS product_name,
+    SUM(s.sls_sales) AS total_sales
+FROM bronze.crm_prd_info p
+INNER JOIN bronze.crm_sales_details s
+    ON p.prd_key = s.sls_prd_key
+GROUP BY p.prd_key, p.prd_nm
+ORDER BY total_sales DESC;

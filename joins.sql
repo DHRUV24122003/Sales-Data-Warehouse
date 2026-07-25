@@ -77,3 +77,5 @@ INNER JOIN bronze.crm_prd_info p
     ON s.sls_prd_key = p.prd_key
 GROUP BY p.prd_key, p.prd_nm
 ORDER BY total_sales DESC;
+
+

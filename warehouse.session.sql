@@ -122,3 +122,18 @@ select * ,
 ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY cst_create_date DESC) AS flag_last
 from bronze.crm_cust_info
 where customer_id = 29466;
+
+
+select * from bronze.crm_prd_info;
+
+
+
+SELECT 
+    p.prd_key,
+    p.prd_nm AS product_name,
+    SUM(s.sls_sales) AS total_sales
+FROM bronze.crm_sales_details s
+INNER JOIN bronze.crm_prd_info p 
+    ON s.sls_prd_key = SUBSTRING(p.prd_key FROM 7)
+GROUP BY p.prd_key, p.prd_nm
+ORDER BY total_sales DESC;

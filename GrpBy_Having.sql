@@ -235,10 +235,7 @@ ORDER BY total_customers DESC;
 
 
 
-select * from bronze.crm_prd_info
-select * from bronze.erp_loc_a101;
-select * from bronze.crm_cust_info;
-select * from bronze.crm_sales_details;
+
 
 
 
@@ -287,4 +284,89 @@ select p.prd_nm,
        ON   s.sls_prd_key = substring(p.prd_key from 7)
        group by p.prd_nm order by total_sales desc limit 5
 
-select
+
+
+select * from bronze.crm_prd_info
+select * from bronze.erp_loc_a101;
+select * from bronze.crm_cust_info;
+select * from bronze.crm_sales_details;
+
+select c.cst_gndr,
+       sum(sls_sales) as total_sales
+       from bronze.crm_sales_details s
+       INNER JOIN bronze.crm_cust_info c
+       ON s.sls_cust_id = c.cst_id
+       group by c.cst_gndr order by total_sales desc
+
+
+
+
+
+-- Product line (prd_line) wise total sales nikaalo.
+select p.prd_line,
+       sum(sls_sales) as total_sales
+       from bronze.crm_sales_details s
+    INNER JOIN bronze.crm_prd_info p
+    ON s.sls_prd_key = substring(p.prd_key from 7)
+    group by p.prd_line order by total_sales desc
+
+
+--har customer ka first order date and total sales amount nikalo
+SELECT
+    c.cst_id,
+    c.cst_firstname || ' ' || c.cst_lastname AS customer_name,
+    MIN(s.sls_order_dt) AS first_order_date,
+    SUM(s.sls_sales) AS total_sales
+FROM bronze.crm_sales_details s
+INNER JOIN bronze.crm_cust_info c
+    ON s.sls_cust_id = c.cst_id
+GROUP BY c.cst_id, c.cst_firstname, c.cst_lastname
+ORDER BY total_sales DESC;
+
+--Q12. Product category (prd_line) aur country wise sales analysis karo.
+
+select l.cntry as country,
+       p.prd_line,
+       sum(sls_sales) as total_sales
+       from bronze.crm_sales_details s
+       INNER JOIN bronze.crm_prd_info p
+    ON p.PRD_KEY = s.sls_prd_key
+INNER JOIN bronze.erp_loc_a101 l
+    ON REPLACE(l."CID", '-', '') = c.cst_key
+GROUP BY l."CNTRY"
+ORDER BY total_sales DESC;
+
+
+
+SELECT
+    p.prd_line AS product_category,
+    l."CNTRY" AS country,
+    SUM(s.sls_sales) AS total_sales,
+    COUNT(*) AS total_orders
+FROM bronze.crm_sales_details s
+INNER JOIN bronze.crm_prd_info p
+    ON s.sls_prd_key = SUBSTRING(p.prd_key FROM 7)
+INNER JOIN bronze.crm_cust_info c
+    ON s.sls_cust_id = c.cst_id
+INNER JOIN bronze.erp_loc_a101 l
+    ON REPLACE(l."CID", '-', '') = c.cst_key
+GROUP BY p.prd_line, l."CNTRY"
+ORDER BY total_sales DESC;
+
+
+
+SELECT
+    l."CNTRY" AS country,
+    SUM(s.sls_sales) AS total_sales,
+    COUNT(DISTINCT s.sls_ord_num) AS total_orders,
+    COUNT(DISTINCT c.cst_id) AS total_customers
+FROM bronze.crm_sales_details s
+INNER JOIN bronze.crm_prd_info p
+    ON s.sls_prd_key = SUBSTRING(p.prd_key FROM 7)
+INNER JOIN bronze.crm_cust_info c
+    ON s.sls_cust_id = c.cst_id
+INNER JOIN bronze.erp_loc_a101 l
+    ON REPLACE(l."CID", '-', '') = c.cst_key
+GROUP BY l."CNTRY"
+ORDER BY total_sales DESC
+LIMIT 10;   

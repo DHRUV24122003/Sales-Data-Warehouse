@@ -137,3 +137,34 @@ INNER JOIN bronze.crm_prd_info p
     ON s.sls_prd_key = SUBSTRING(p.prd_key FROM 7)
 GROUP BY p.prd_key, p.prd_nm
 ORDER BY total_sales DESC;
+
+
+--Customer + Location join karke har country mein kitne customers hain, count karo.
+
+SELECT
+    l."CNTRY" AS country,
+    COUNT(*) AS total_customers
+FROM bronze.crm_cust_info c
+INNER JOIN bronze.erp_loc_a101 l
+    ON REPLACE(l."CID", '-', '') = c.cst_key
+GROUP BY l."CNTRY"
+ORDER BY total_customers DESC;
+
+
+select * from bronze.erp_loc_a101
+select * from bronze.crm_cust_info
+
+
+
+--Sales + Customer + Location join karke har country ka total sales amount nikaalo.
+SELECT
+    l."CNTRY" AS country,
+    SUM(s.sls_sales) AS total_sales
+FROM bronze.crm_sales_details s
+INNER JOIN bronze.crm_cust_info c
+    ON s.sls_cust_id = c.cst_id
+INNER JOIN bronze.erp_loc_a101 l
+    ON REPLACE(l."CID", '-', '') = c.cst_key
+GROUP BY l."CNTRY"
+ORDER BY total_sales DESC;
+

@@ -198,3 +198,93 @@ INNER JOIN bronze.crm_sales_details s
     ON p.prd_key = s.sls_prd_key
 GROUP BY p.prd_key, p.prd_nm
 ORDER BY total_sales DESC;
+
+
+
+--Customer + Location join karke har country mein kitne customers hain, count karo.
+
+select * from bronze.erp_loc_a101;
+select * from bronze.erp_cust_az12;
+
+select CNTRY,
+       COUNT(CID) as total_customers
+       From bronze.erp_loc_a101 l
+       INNER JOIN bronze.erp_cust_az12 c
+       ON CID.c = CID.l
+    group by CNTRY
+
+
+SELECT
+    l.CNTRY AS country,
+    COUNT(*) AS total_customers
+FROM bronze.crm_cust_info c
+INNER JOIN bronze.erp_loc_a101 l
+    ON REPLACE(CID, '-', '') = c.cst_key
+GROUP BY l.CNTRY
+ORDER BY total_customers DESC;
+
+
+SELECT
+    l."CNTRY" AS country,
+    COUNT(*) AS total_customers
+FROM bronze.crm_cust_info c
+INNER JOIN bronze.erp_loc_a101 l
+    ON REPLACE(l."CID", '-', '') = c.cst_key
+GROUP BY l."CNTRY"
+ORDER BY total_customers DESC;
+
+
+
+select * from bronze.crm_prd_info
+select * from bronze.erp_loc_a101;
+select * from bronze.crm_cust_info;
+select * from bronze.crm_sales_details;
+
+
+
+--Sales + Customer + Location join karke har country ka total sales amount nikaalo.
+
+
+SELECT
+    l."CNTRY" AS country,
+    sum(sls_sales) AS total_sales
+FROM bronze.crm_sales_details s
+INNER JOIN bronze.erp_loc_a101 l
+    ON REPLACE(l."CID", '-', '') = c.cst_key =
+GROUP BY l."CNTRY"
+ORDER BY total_customers DESC;
+
+
+
+SELECT
+    l."CNTRY" AS country,
+    SUM(s.sls_sales) AS total_sales
+FROM bronze.crm_sales_details s
+INNER JOIN bronze.crm_cust_info c
+    ON s.sls_cust_id = c.cst_id
+INNER JOIN bronze.erp_loc_a101 l
+    ON REPLACE(l."CID", '-', '') = c.cst_key
+GROUP BY l."CNTRY"
+ORDER BY total_sales DESC;
+
+
+
+
+select l."CNTRY" as country,
+       sum(sls_sales) as total_sales
+       from bronze.crm_sales_details s
+    INNER JOIN bronze.crm_cust_info c
+    ON  s.sls_cust_id = c.cst_id
+INNER JOIN bronze.erp_loc_a101 l
+    on REPLACE(l."CID",'-',' ') = c.cst_key
+group by l.CNTRY order by total_sales desc
+
+
+select p.prd_nm,
+       sum(sls_sales) as total_sales
+       from bronze.crm_sales_details s
+       Inner Join bronze.crm_prd_info p
+       ON   s.sls_prd_key = substring(p.prd_key from 7)
+       group by p.prd_nm order by total_sales desc limit 5
+
+select

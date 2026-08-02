@@ -480,3 +480,65 @@ GROUP BY order_month
 ORDER BY order_month;
 
 
+
+--subquery
+--Question: Un products ki sales dikhao jinki sales average sales se zyada hai.
+
+select sls_prd_key,sls_sales
+from bronze.crm_sales_details
+where sls_sales > (
+    select avg(sls_sales) from bronze.crm_sales_details
+    )
+order by sls_sales desc limit 10
+
+
+--Question: Un customers ki details dikhao jinhone 100000 se zyada sales kiya hai.
+--SQL
+SELECT
+    cst_id,
+    cst_firstname,
+    cst_lastname
+FROM bronze.crm_cust_info
+WHERE cst_id IN (
+    SELECT sls_cust_id
+    FROM bronze.crm_sales_details
+    GROUP BY sls_cust_id
+    HAVING SUM(sls_sales) > 1000
+);
+
+
+
+
+WITH customer_sales AS (
+    SELECT
+        sls_cust_id,
+        SUM(sls_sales) AS total_sales
+    FROM bronze.crm_sales_details
+    GROUP BY sls_cust_id
+)
+SELECT
+    c.cst_id,
+    c.cst_firstname,
+    c.cst_lastname,
+    cs.total_sales
+FROM bronze.crm_cust_info c
+INNER JOIN customer_sales cs
+    ON c.cst_id = cs.sls_cust_id
+ORDER BY cs.total_sales DESC
+LIMIT 10;
+
+
+WITH product_sales AS (
+    SELECT
+        sls_prd_key,
+        SUM(sls_sales) AS total_sales
+    FROM bronze.crm_sales_details
+    GROUP BY sls_prd_key
+),
+top_products AS (
+    SELECT *
+    FROM product_sales
+    ORDER BY total_sales DESC
+    LIMIT 5
+)
+SELECT * FROM top_products;

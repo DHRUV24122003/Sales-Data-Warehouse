@@ -208,3 +208,90 @@ HAVING COUNT(s.sls_ord_num) > (
     ) t
 )
 ORDER BY total_orders DESC;
+
+
+
+
+WITH customer_sales AS (
+    SELECT 
+        sls_cust_id,
+        SUM(sls_sales) AS total_sales
+    FROM bronze.crm_sales_details
+    GROUP BY sls_cust_id
+)
+SELECT *
+FROM customer_sales
+ORDER BY total_sales DESC
+LIMIT 10;
+
+
+
+
+WITH customer_sales AS (
+    SELECT 
+        sls_cust_id,
+        SUM(sls_sales) AS total_sales
+    FROM bronze.crm_sales_details
+    GROUP BY sls_cust_id
+)
+SELECT *
+FROM customer_sales
+ORDER BY total_sales DESC
+LIMIT 10;
+
+
+
+
+WITH product_sales AS (
+    SELECT 
+        sls_prd_key,
+        SUM(sls_sales) AS total_sales,
+        COUNT(*) AS total_orders
+    FROM bronze.crm_sales_details
+    GROUP BY sls_prd_key
+)
+SELECT *
+FROM product_sales
+ORDER BY total_sales DESC
+LIMIT 10;
+
+
+
+
+
+
+WITH product_sales AS (
+    SELECT 
+        sls_prd_key,
+        SUM(sls_sales) AS total_sales
+    FROM bronze.crm_sales_details
+    GROUP BY sls_prd_key
+),
+top_products AS (
+    SELECT *
+    FROM product_sales
+    ORDER BY total_sales DESC
+    LIMIT 5
+)
+SELECT * FROM top_products;
+
+
+
+
+WITH customer_sales AS (
+    SELECT 
+        sls_cust_id,
+        SUM(sls_sales) AS total_sales
+    FROM bronze.crm_sales_details
+    GROUP BY sls_cust_id
+)
+SELECT 
+    c.cst_id,
+    c.cst_firstname,
+    c.cst_lastname,
+    cs.total_sales
+FROM bronze.crm_cust_info c
+INNER JOIN customer_sales cs 
+    ON c.cst_id = cs.sls_cust_id
+ORDER BY cs.total_sales DESC
+LIMIT 10;

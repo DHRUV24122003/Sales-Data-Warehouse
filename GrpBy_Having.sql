@@ -1,7 +1,7 @@
 select * from bronze.crm_cust_info;
 
 
--- crm_cust_info table mein total kitne customers hain?
+-- crm_cust_info total customer base
 SELECT
     cst_gndr,
     COUNT(*) AS total
@@ -10,25 +10,30 @@ GROUP BY cst_gndr
 ORDER BY total DESC;
 
 
-select cst_gndr, count(*) As total from bronze.crm_cust_info GROUP BY cst_gndr  ORDER BY total DESC;
+--cutomer count according to their marital status
 
--- Marital Status ke hisaab se customers count karo.
 select cst_marital_status,count(*) AS total
 FROM bronze.crm_cust_info group by cst_marital_status
 
 
+--total sales done
 SELECT SUM(sls_sales) AS total_sales
 FROM bronze.crm_sales_details;
 
 
--- Average order value nikaalo (sls_sales ka average).
+-- Average order value  (average of sls_sales)
 
-SELECT ROUND(AVG(sls_sales), 2) AS avg_order_value
+SELECT ROUND(AVG(sls_sales)::numeric, 2) AS avg_order_value
+FROM bronze.crm_sales_details;
+
+--or
+
+SELECT ROUND(CAST(AVG(sls_sales) AS numeric), 2) AS avg_order_value
 FROM bronze.crm_sales_details;
 
 
 
--- Har Product ka Total Sales (Highest pehle)
+-- Total Sales of each product (Highest first)
 SELECT
     sls_prd_key,
     SUM(sls_sales) AS total_sales
@@ -36,16 +41,13 @@ FROM bronze.crm_sales_details
 GROUP BY sls_prd_key
 ORDER BY total_sales DESC;
 
-select * from bronze.crm_sales_details;
 
---total sales
-select sum(sls_sales) from bronze.crm_sales_details
-
+--toal sales of each product in desc order
 select sls_prd_key , sum(sls_sales)  As total_sales from bronze.crm_sales_details  group by sls_prd_key order by total_sales
 desc
 
---Average order value nikaalo (sls_sales ka average).
 
+--Average sales of each product (sls_sales average).
 
 select sls_prd_key, avg(sls_sales) as average_sales from bronze.crm_sales_details group by sls_prd_key order by average_sales
 desc;
@@ -54,22 +56,31 @@ desc;
 select round(avg(sls_sales)) as average_sales from bronze.crm_sales_details  order by average_sales
 desc
 
---har product ka total sales
+--Product Total Sales (with filter)
 
-select sls_prd_key, sum(sls_sales) as total_sales from bronze.crm_sales_details group by sls_prd_key
-     having sum(sls_sales)> 50000 order by total_sales desc
+SELECT sls_prd_key, SUM(sls_sales) AS total_sales 
+FROM bronze.crm_sales_details 
+GROUP BY sls_prd_key
+HAVING SUM(sls_sales) > 50000 
+ORDER BY total_sales DESC;
 
---Gender + Marital Status dono ke combination se customers count karo.
 
-select cst_gndr, cst_marital_status , count(*) as total_customers from bronze.crm_cust_info group by cst_gndr, cst_marital_status
-order by total_customers desc;
+--Customer Count by Gender + Marital Status
+SELECT cst_gndr, cst_marital_status, COUNT(*) AS total_customers 
+FROM bronze.crm_cust_info 
+GROUP BY cst_gndr, cst_marital_status
+ORDER BY total_customers DESC;
 
---Q9. crm_prd_info table se har prd_line ka average cost nikaalo.
-select * from bronze.crm_prd_info;
+-- Average Cost by Product Line
 
-select  prd_line, avg(prd_cost) avg_cost  from bronze.crm_prd_info group by prd_line order by avg_cost desc
+SELECT prd_line, AVG(prd_cost) AS avg_cost  
+FROM bronze.crm_prd_info 
+GROUP BY prd_line 
+ORDER BY avg_cost DESC;
 
---sabse mahanga aur sabse sasta product
+
+
+--Highest and Lowest Product Cost
 
 SELECT
     MAX(prd_cost) AS highest_price,
@@ -81,15 +92,17 @@ WHERE prd_cost IS NOT NULL;
 
 
 
-select distinct prd_cost
+--Top 5 Distinct Highest Prices
 
-from bronze.crm_prd_info where prd_cost IS NOT NULL order by prd_cost desc limit 5
+SELECT DISTINCT prd_cost
+FROM bronze.crm_prd_info 
+WHERE prd_cost IS NOT NULL 
+ORDER BY prd_cost DESC 
+LIMIT 5;
 
 
 
-
---5 sabse saste
--- Top 5 Sabse Saste Products(agar product cost distinct chahiye to)
+--Top 5 Cheapest Products (Distinct Cost)
 SELECT
     distinct on(prd_cost)
     prd_key,
@@ -102,7 +115,7 @@ ORDER BY prd_cost ASC
 LIMIT 5;
 
 
---sabse mahange
+--Top 5 Most Expensive Products (Distinct Cost)
 SELECT
     distinct on(prd_cost)
     prd_key,
@@ -116,8 +129,7 @@ LIMIT 5;
 
 
 
-select * from bronze.crm_cust_info;
-select * FROM bronze.crm_sales_details;
+--Top 10 Highest Sales Orders with Customer Name
 
 select s.sls_ord_num,
        c.cst_firstname || ' ' || c.cst_lastname as cst_fullname,
@@ -128,7 +140,7 @@ select s.sls_ord_num,
        ON sls_cust_id = cst_id
        ORDER by  s.sls_sales  DESC limit 10;
 
---
+--Total Sales per Customer
 select c.cst_id,
        c.cst_firstname || ' ' || c.cst_lastname as cst_fullname,
        c.cst_gndr,
@@ -140,96 +152,37 @@ select c.cst_id,
 
 
 
-
-SELECT
-    c.cst_id,
-    c.cst_firstname || ' ' || c.cst_lastname AS customer_name,
-    SUM(s.sls_sales) AS total_sales
-FROM bronze.crm_sales_details s
-INNER JOIN bronze.crm_cust_info c
-    ON s.sls_cust_id = c.cst_id
-GROUP BY c.cst_id, c.cst_firstname, c.cst_lastname
-ORDER BY total_sales DESC
-LIMIT 10;
-
-
+--Customers Who Never Placed an Order
 
 SELECT
     c.cst_id,
     c.cst_firstname || ' ' || c.cst_lastname AS customer_name,
     c.cst_gndr
-FROM bronze.crm_cust_info c          -- Left Table (saare customers)
+FROM bronze.crm_cust_info c          -- Left Table (customers)
 LEFT JOIN bronze.crm_sales_details s  -- Right Table (orders)
     ON c.cst_id = s.sls_cust_id
-WHERE s.sls_ord_num IS NULL           -- Sirf NULL wale (no order)
+WHERE s.sls_ord_num IS NULL           -- Only NULL wale (no order)
 ORDER BY c.cst_id;
 
+
+
 --join the product and sales together and find out the total sales and name of the product
-
-select * from bronze.crm_prd_info;
-select * from bronze.crm_sales_details;
 --prd key is common
-select p.prd_key,
-       p.prd_nm,
-       sum(sls_sales) as total_sales
-       from bronze.crm_sales_details s
-left join bronze.crm_prd_info p
-ON   s.sls_prd_key = p.prd_key where p.prd_key IS NOT NULL GROUP BY p.prd_key, p.prd_nm
-ORDER BY total_sales DESC;
-
-
-SELECT
-    p.prd_key,
-    p.prd_nm AS product_name,
-    SUM(s.sls_sales) AS total_sales
+SELECT p.prd_key, p.prd_nm AS product_name, SUM(s.sls_sales) AS total_sales
 FROM bronze.crm_prd_info p
-INNER JOIN bronze.crm_sales_details s
-    ON  p.prd_key =  s.sls_prd_key
-GROUP BY p.prd_key, p.prd_nm
-ORDER BY total_sales DESC;
-
-
-SELECT
-    p.prd_key,
-    p.prd_nm AS product_name,
-    SUM(s.sls_sales) AS total_sales
-FROM bronze.crm_prd_info p
-INNER JOIN bronze.crm_sales_details s
-    ON p.prd_key = s.sls_prd_key
+INNER JOIN bronze.crm_sales_details s ON s.sls_prd_key = SUBSTRING(p.prd_key FROM 7)
 GROUP BY p.prd_key, p.prd_nm
 ORDER BY total_sales DESC;
 
 
 
---Customer + Location join karke har country mein kitne customers hain, count karo.
-
-select * from bronze.erp_loc_a101;
-select * from bronze.erp_cust_az12;
-
-select CNTRY,
-       COUNT(CID) as total_customers
-       From bronze.erp_loc_a101 l
-       INNER JOIN bronze.erp_cust_az12 c
-       ON CID.c = CID.l
-    group by CNTRY
 
 
-SELECT
-    l.CNTRY AS country,
-    COUNT(*) AS total_customers
+--Number of Customers per Country
+
+SELECT l."CNTRY" AS country, COUNT(*) AS total_customers
 FROM bronze.crm_cust_info c
-INNER JOIN bronze.erp_loc_a101 l
-    ON REPLACE(CID, '-', '') = c.cst_key
-GROUP BY l.CNTRY
-ORDER BY total_customers DESC;
-
-
-SELECT
-    l."CNTRY" AS country,
-    COUNT(*) AS total_customers
-FROM bronze.crm_cust_info c
-INNER JOIN bronze.erp_loc_a101 l
-    ON REPLACE(l."CID", '-', '') = c.cst_key
+INNER JOIN bronze.erp_loc_a101 l ON REPLACE(l."CID", '-', '') = c.cst_key
 GROUP BY l."CNTRY"
 ORDER BY total_customers DESC;
 
@@ -237,46 +190,19 @@ ORDER BY total_customers DESC;
 
 
 
+--total sales by location.
 
 
---Sales + Customer + Location join karke har country ka total sales amount nikaalo.
-
-
-SELECT
-    l."CNTRY" AS country,
-    sum(sls_sales) AS total_sales
+SELECT l."CNTRY" AS country, SUM(s.sls_sales) AS total_sales
 FROM bronze.crm_sales_details s
-INNER JOIN bronze.erp_loc_a101 l
-    ON REPLACE(l."CID", '-', '') = c.cst_key =
-GROUP BY l."CNTRY"
-ORDER BY total_customers DESC;
-
-
-
-SELECT
-    l."CNTRY" AS country,
-    SUM(s.sls_sales) AS total_sales
-FROM bronze.crm_sales_details s
-INNER JOIN bronze.crm_cust_info c
-    ON s.sls_cust_id = c.cst_id
-INNER JOIN bronze.erp_loc_a101 l
-    ON REPLACE(l."CID", '-', '') = c.cst_key
+INNER JOIN bronze.crm_cust_info c ON s.sls_cust_id = c.cst_id
+INNER JOIN bronze.erp_loc_a101 l ON REPLACE(l."CID", '-', '') = c.cst_key
 GROUP BY l."CNTRY"
 ORDER BY total_sales DESC;
 
 
 
-
-select l."CNTRY" as country,
-       sum(sls_sales) as total_sales
-       from bronze.crm_sales_details s
-    INNER JOIN bronze.crm_cust_info c
-    ON  s.sls_cust_id = c.cst_id
-INNER JOIN bronze.erp_loc_a101 l
-    on REPLACE(l."CID",'-',' ') = c.cst_key
-group by l.CNTRY order by total_sales desc
-
-
+--Top 5 Products by Sales
 select p.prd_nm,
        sum(sls_sales) as total_sales
        from bronze.crm_sales_details s
@@ -286,11 +212,7 @@ select p.prd_nm,
 
 
 
-select * from bronze.crm_prd_info
-select * from bronze.erp_loc_a101;
-select * from bronze.crm_cust_info;
-select * from bronze.crm_sales_details;
-
+--Total Sales by Gender
 select c.cst_gndr,
        sum(sls_sales) as total_sales
        from bronze.crm_sales_details s
@@ -302,7 +224,7 @@ select c.cst_gndr,
 
 
 
--- Product line (prd_line) wise total sales nikaalo.
+-- Product line (prd_line) wise total sales
 select p.prd_line,
        sum(sls_sales) as total_sales
        from bronze.crm_sales_details s
@@ -311,7 +233,7 @@ select p.prd_line,
     group by p.prd_line order by total_sales desc
 
 
---har customer ka first order date and total sales amount nikalo
+--First Order Date + Total Sales per Customer
 SELECT
     c.cst_id,
     c.cst_firstname || ' ' || c.cst_lastname AS customer_name,
@@ -323,20 +245,7 @@ INNER JOIN bronze.crm_cust_info c
 GROUP BY c.cst_id, c.cst_firstname, c.cst_lastname
 ORDER BY total_sales DESC;
 
---Q12. Product category (prd_line) aur country wise sales analysis karo.
-
-select l.cntry as country,
-       p.prd_line,
-       sum(sls_sales) as total_sales
-       from bronze.crm_sales_details s
-       INNER JOIN bronze.crm_prd_info p
-    ON p.PRD_KEY = s.sls_prd_key
-INNER JOIN bronze.erp_loc_a101 l
-    ON REPLACE(l."CID", '-', '') = c.cst_key
-GROUP BY l."CNTRY"
-ORDER BY total_sales DESC;
-
-
+--Sales by Product Category + Country
 
 SELECT
     p.prd_line AS product_category,
@@ -354,25 +263,21 @@ GROUP BY p.prd_line, l."CNTRY"
 ORDER BY total_sales DESC;
 
 
-
-SELECT
-    l."CNTRY" AS country,
-    SUM(s.sls_sales) AS total_sales,
-    COUNT(DISTINCT s.sls_ord_num) AS total_orders,
-    COUNT(DISTINCT c.cst_id) AS total_customers
+--Top 10 Countries by Performance
+SELECT l."CNTRY" AS country,
+       SUM(s.sls_sales) AS total_sales,
+       COUNT(DISTINCT s.sls_ord_num) AS total_orders,
+       COUNT(DISTINCT c.cst_id) AS total_customers
 FROM bronze.crm_sales_details s
-INNER JOIN bronze.crm_prd_info p
-    ON s.sls_prd_key = SUBSTRING(p.prd_key FROM 7)
-INNER JOIN bronze.crm_cust_info c
-    ON s.sls_cust_id = c.cst_id
-INNER JOIN bronze.erp_loc_a101 l
-    ON REPLACE(l."CID", '-', '') = c.cst_key
+INNER JOIN bronze.crm_prd_info p ON s.sls_prd_key = SUBSTRING(p.prd_key FROM 7)
+INNER JOIN bronze.crm_cust_info c ON s.sls_cust_id = c.cst_id
+INNER JOIN bronze.erp_loc_a101 l ON REPLACE(l."CID", '-', '') = c.cst_key
 GROUP BY l."CNTRY"
 ORDER BY total_sales DESC
 LIMIT 10;
 
 
--- today
+-- basic conversion
 
 
 select cst_key,
@@ -431,13 +336,16 @@ SELECT
     EXTRACT(YEAR FROM TO_DATE(sls_order_dt::TEXT, 'YYYYMMDD')) AS order_year,
     SUM(sls_sales) AS total_sales
 FROM bronze.crm_sales_details
-WHERE LENGTH(sls_order_dt::TEXT) = 8          -- Sirf valid 8-digit dates
+WHERE LENGTH(sls_order_dt::TEXT) = 8          -- only valid 8-digit dates
 GROUP BY order_year
 ORDER BY order_year;
 
 
 
---age()
+
+
+--Delivery Time (using AGE)
+
 SELECT
     sls_ord_num,
     TO_DATE(sls_order_dt::TEXT, 'YYYYMMDD') AS order_date,
@@ -461,6 +369,8 @@ WHERE LENGTH(sls_order_dt::TEXT) = 8
 GROUP BY order_month
 ORDER BY order_month;
 
+
+--Month-wise Total Sales
 SELECT
     TO_CHAR(DATE_TRUNC('month', TO_DATE(sls_order_dt::TEXT, 'YYYYMMDD')), 'YYYY-MM') AS order_month,
     SUM(sls_sales) AS total_sales
@@ -471,18 +381,9 @@ ORDER BY order_month;
 
 
 
-SELECT
-    DATE_TRUNC('month', TO_DATE(sls_order_dt::TEXT, 'YYYYMMDD'))::DATE AS order_month,
-    SUM(sls_sales) AS total_sales
-FROM bronze.crm_sales_details
-WHERE LENGTH(sls_order_dt::TEXT) = 8
-GROUP BY order_month
-ORDER BY order_month;
-
-
-
 --subquery
---Question: Un products ki sales dikhao jinki sales average sales se zyada hai.
+--Orders greater than Average Sales (Subquery)
+
 
 select sls_prd_key,sls_sales
 from bronze.crm_sales_details
@@ -492,7 +393,7 @@ where sls_sales > (
 order by sls_sales desc limit 10
 
 
---Question: Un customers ki details dikhao jinhone 100000 se zyada sales kiya hai.
+--the customer who has a record over 100000 sales
 --SQL
 SELECT
     cst_id,
@@ -508,7 +409,7 @@ WHERE cst_id IN (
 
 
 
-
+--Top 10 Customers using CTE
 WITH customer_sales AS (
     SELECT
         sls_cust_id,
@@ -528,16 +429,14 @@ ORDER BY cs.total_sales DESC
 LIMIT 10;
 
 
+--Top 5 Products using Multiple CTEs
 WITH product_sales AS (
-    SELECT
-        sls_prd_key,
-        SUM(sls_sales) AS total_sales
+    SELECT sls_prd_key, SUM(sls_sales) AS total_sales
     FROM bronze.crm_sales_details
     GROUP BY sls_prd_key
 ),
 top_products AS (
-    SELECT *
-    FROM product_sales
+    SELECT * FROM product_sales
     ORDER BY total_sales DESC
     LIMIT 5
 )

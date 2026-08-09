@@ -23,7 +23,7 @@ LIMIT 10;
 
 
 
---Gender-wise Sales Rank (PARTITION BY ke saath)
+--Gender-wise Sales Rank (PARTITION BY )
 SELECT 
     c.cst_gndr,
     c.cst_id,
@@ -52,7 +52,7 @@ ORDER BY year_rank;
 
 
 
---RANK vs DENSE_RANK difference dekhne ke liye
+--RANK vs DENSE_RANK difference 
  SELECT
     sls_cust_id,
     SUM(sls_sales) AS total_sales,
@@ -68,7 +68,7 @@ LIMIT 10;
 
 -- ROW_NUMBER()
 -- Kya Karta Hai?
--- Har row ko unique number deta hai (1, 2, 3, 4...), chahe values same hon.
+-- gives unique number to each row (1, 2, 3, 4...), even if the values are same
 
 SELECT 
     sls_cust_id,

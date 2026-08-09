@@ -1,3 +1,4 @@
+--Find Names with Extra Spaces
 SELECT 
     cst_id,
     cst_firstname,
@@ -10,7 +11,7 @@ WHERE cst_firstname != TRIM(cst_firstname)
 LIMIT 20;
 
 
-
+--Clean Customer Names
 SELECT 
     cst_id,
     TRIM(cst_firstname) AS cst_firstname,
@@ -19,6 +20,8 @@ SELECT
 FROM bronze.crm_cust_info;
 
 
+
+--Check Gender Distribution
 SELECT 
     cst_gndr,
     COUNT(*) AS total
@@ -27,7 +30,7 @@ GROUP BY cst_gndr
 ORDER BY total DESC;
 
 
-
+--Standardize Gender Values
 SELECT 
     cst_id,
     cst_firstname,

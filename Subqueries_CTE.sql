@@ -1,9 +1,10 @@
+--Basic Table Checks
 select * from bronze.crm_cust_info
 select * from bronze.crm_sales_details
 select * from bronze.crm_prd_info
 select * from bronze.erp_loc_a101
 
--- Q1. Average sales se zyada wali sales records dikhao.
+-- Sales higher than Average
 SELECT 
     sls_prd_key,
     sls_sales
@@ -39,7 +40,7 @@ WHERE s.sls_cust_id IS NULL;
 
 
 
---subquery in select statement
+--Alternative (using NOT IN Subquery)
 select cst_firstname,
 cst_lastname
 from bronze.crm_cust_info
@@ -47,54 +48,55 @@ where cst_id  not in (select distinct sls_cust_id from bronze.crm_sales_details 
 
 
 
-SELECT 
-    cst_id,
-    cst_firstname,
-    cst_lastname
-FROM bronze.crm_cust_info
-WHERE cst_id NOT IN (
-    SELECT DISTINCT sls_cust_id
-    FROM bronze.crm_sales_details
-    WHERE sls_cust_id IS NOT NULL
-);
 
--- Q4. Average se kam price wale products ki list dikhao (crm_prd_info se).
 
+-- Products Cheaper than Average Cost
 select * from bronze.crm_prd_info
 where prd_cost <(select avg(prd_cost) from bronze.crm_prd_info where prd_cost is not null)
 
 
---Q5. Sabse mehnga product ka naam aur cost dikhao.
+-- Most Expensive Product
 
 select prd_id,prd_nm,prd_cost
 from bronze.crm_prd_info
 where prd_cost =(select max(prd_cost) from bronze.crm_prd_info where prd_cost is not null) 
 
 
---Q6. Un customers ki details dikhao jinki total sales 10000 se zyada hai (IN + subquery).
+--Customers with Total Sales > 10,000
+
 
 select * from bronze.crm_cust_info
 where cst_id in (select sls_cust_id from bronze.crm_sales_details group by sls_cust_id having sum(sls_sales) > 10000)
 
 
 
---Q7. Har product ki total sales nikaalo aur sirf unhe dikhao jinki sales average product sales se zyada hai.
-
-SELECT 
-    sls_prd_key,
-    SUM(sls_sales) AS total_sales
-FROM bronze.crm_sales_details
 
 
 
---Q7. Har product ki total sales nikaalo aur sirf unhe dikhao jinki sales average product sales se zyada hai.
+
+--Products with Above Average Total Sales
+
 select sls_prd_key,
 sum(sls_sales) as total_sales
 from bronze.crm_sales_details
 group by sls_prd_key
 having sum(sls_sales) > (select avg(product_total) from (select sum(sls_sales) as product_total from bronze.crm_sales_details group by sls_prd_key) ) order by total_sales desc limit 10
 
----Q8. Sabse zyada orders dene wale top 5 customers ke naam dikhao.
+
+---SELECT c.cst_id, c.cst_firstname, c.cst_lastname
+FROM bronze.crm_cust_info c
+WHERE c.cst_id IN (
+    SELECT sls_cust_id
+    FROM (
+        SELECT sls_cust_id, COUNT(sls_ord_num) AS total_orders
+        FROM bronze.crm_sales_details
+        GROUP BY sls_cust_id
+        ORDER BY total_orders DESC
+        LIMIT 5
+    ) t
+);
+
+
 
 SELECT 
     c.cst_id,
@@ -115,19 +117,18 @@ WHERE c.cst_id IN (
 );
 
 
---Q9. Un products ko dikhao jo kabhi sell nahi hue (NOT IN).
+--Q9. Products That Were Never Sold.
 
 select * from bronze.crm_prd_info
 WHERE SUBSTRING(prd_key FROM 7) NOT IN (select distinct sls_prd_key from bronze.crm_sales_details where sls_prd_key is not null)
 
 
---.10 Customer table se un customers ko dikhao jinka cst_id sales table mein exist karta hai (EXISTS use karke).
-
+--.Customers Who Exist in Sales Table (using EXISTS)
 select * from bronze.crm_cust_info c
 where exists( select sls_cust_id from bronze.crm_sales_details s where s.sls_cust_id = c.cst_id)
 
 
--- 11 Har customer ki total sales ke saath unka rank nikaalo (subquery se – Window function mat use karna).
+-- Rank Customers by Total Sales (using Subquery)
 SELECT 
     sls_cust_id,
     total_sales,
@@ -150,7 +151,7 @@ FROM (
 ORDER BY total_sales DESC;
 
 
---12  Un orders ko dikhao jinki sales usi product ki average sales se zyada hai (Correlated Subquery)
+--12  Orders Higher than Product’s Average Sales (Correlated Subquery)
 
 SELECT 
     s.sls_ord_num,
@@ -164,8 +165,7 @@ WHERE s.sls_sales > (
 );
 
 
---Q13. Har year ki total sales nikaalo aur uske saath overall average sales bhi dikhao (subquery se).
-SELECT 
+--Q13. Year-wise Sales + Overall Average
     EXTRACT(YEAR FROM TO_DATE(sls_order_dt::TEXT, 'YYYYMMDD')) AS sales_year,
     SUM(sls_sales) AS total_sales,
     (SELECT AVG(sls_sales) FROM bronze.crm_sales_details) AS overall_avg_sales
@@ -174,7 +174,7 @@ WHERE LENGTH(sls_order_dt::TEXT) = 8
 GROUP BY sales_year
 ORDER BY sales_year;
 
---q14 top 3 countries by sales
+-- top 3 countries by sales
 SELECT 
     l."CNTRY" AS country,
     SUM(s.sls_sales) AS total_sales
@@ -188,7 +188,7 @@ ORDER BY total_sales DESC
 LIMIT 3;
 
 
---q 15Un customers ko dikhao jinhone average se zyada orders kiye hain.
+-- Customers Who Placed More Orders than Average
 
 SELECT 
     c.cst_id,
@@ -211,7 +211,7 @@ ORDER BY total_orders DESC;
 
 
 
-
+--Top 10 Customers by Sales (CTE)
 WITH customer_sales AS (
     SELECT 
         sls_cust_id,
@@ -227,21 +227,10 @@ LIMIT 10;
 
 
 
-WITH customer_sales AS (
-    SELECT 
-        sls_cust_id,
-        SUM(sls_sales) AS total_sales
-    FROM bronze.crm_sales_details
-    GROUP BY sls_cust_id
-)
-SELECT *
-FROM customer_sales
-ORDER BY total_sales DESC
-LIMIT 10;
 
 
 
-
+--Product Sales with Order Count (CTE)
 WITH product_sales AS (
     SELECT 
         sls_prd_key,
@@ -254,8 +243,6 @@ SELECT *
 FROM product_sales
 ORDER BY total_sales DESC
 LIMIT 10;
-
-
 
 
 
@@ -277,7 +264,7 @@ SELECT * FROM top_products;
 
 
 
-
+--Top 10 Customers with Names (CTE + JOIN)
 WITH customer_sales AS (
     SELECT 
         sls_cust_id,

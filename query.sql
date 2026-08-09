@@ -13,9 +13,10 @@ select cst_id, cst_key, cst_firstname , cst_gndr from bronze.crm_cust_info Where
 
 select * from bronze.crm_prd_info;
 
+
 select * from bronze.crm_prd_info where prd_line = 'R ' 
 
--- crm_prd_info table se sirf woh products dikhao jinka prd_line = 'R' (Road bikes?).
+-- Full Details of Road Products
 
 SELECT
     prd_id,
@@ -29,47 +30,48 @@ FROM bronze.crm_prd_info
 WHERE prd_line = 'R '
 ORDER BY prd_id;
 
-
+----Correct Way to Filter Product Line 'R'
 SELECT *
 FROM bronze.crm_prd_info
 WHERE TRIM(prd_line) = 'R'
 LIMIT 5;
 
 
--- crm_sales_details table se woh orders dikhao jisme sls_quantity > 1 hai
+-- Orders with Quantity Greater than 1
 
-SELECT * from bronze.crm_sales_details;
+
 
 Select * from bronze.crm_sales_details  where sls_quantity > 1 ;
 
 
--- Customers ko unke cst_create_date ke hisaab se newest first sort karke top 10 dikhao
+--Newest Customers First
 
 select * from bronze.crm_cust_info order by cst_create_date DESC  lIMIT 10;
 
-
+--Newest Customers (Ignoring NULLs)
 select * from bronze.crm_cust_info where  cst_create_date is not null order by cst_create_date DESC  lIMIT 10
 
 
 
--- Q9. crm_cust_info table mein se unique cst_marital_status values nikalo.
+-- Count of Customers by Marital Status
 select cst_marital_status, count(*) from bronze.crm_cust_info group by cst_marital_status  ;
 
 
 SELECT DISTINCT cst_marital_status
 FROM bronze.crm_cust_info;
 
-
+--Top 5 Highest Prices
 select * from bronze.crm_sales_details where sls_price IS NOT NULL order by sls_price desc limit 5;
 
--- agar alag alag price chahiye to
+-- if two different prices
 SELECT DISTINCT ON (sls_price),*
 
 FROM bronze.crm_sales_details where sls_price IS NOT NULL
 ORDER BY sls_price DESC Limit 5
 
 
----
+---Top 5 Distinct Highest Prices (using DISTINCT ON)
+
 SELECT DISTINCT ON (sls_price)
     sls_ord_num,
     sls_prd_key,
@@ -83,14 +85,14 @@ ORDER BY sls_price DESC Limit 5;
 
 
 
----
+---select distinct prices
 SELECT DISTINCT ON (sls_price) *
 
 FROM bronze.crm_sales_details
 ORDER BY sls_price DESC, sls_ord_num limit 5
 
 
-
+--Average Order Value
 SELECT ROUND(AVG(sls_sales), 2) AS avg_order_value
 FROM bronze.crm_sales_details;
 

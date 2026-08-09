@@ -72,7 +72,7 @@ CREATE TABLE bronze.erp_px_cat_g1v2 (
 -- );
 
 
--- upar wala old method hai\
+
 
 
 
@@ -139,7 +139,7 @@ GROUP BY p.prd_key, p.prd_nm
 ORDER BY total_sales DESC;
 
 
---Customer + Location join karke har country mein kitne customers hain, count karo.
+--count of customer by taking Customer + Location 
 
 SELECT
     l."CNTRY" AS country,
@@ -156,8 +156,7 @@ select * from bronze.crm_cust_info
 
 
 
---Sales + Customer + Location join karke har country ka total sales amount nikaalo.
-SELECT
+--total sales amount of each country by taking Sales + Customer + Location 
     l."CNTRY" AS country,
     SUM(s.sls_sales) AS total_sales
 FROM bronze.crm_sales_details s
@@ -170,7 +169,7 @@ ORDER BY total_sales DESC;
 
 
 
---. Gender-wise total sales amount nikaalo.
+--. Gender-wise total sales amount 
 SELECT 
     c.cst_gndr,
     SUM(s.sls_sales) AS total_sales
@@ -180,7 +179,7 @@ INNER JOIN bronze.crm_cust_info c
 GROUP BY c.cst_gndr
 ORDER BY total_sales DESC;
 
--- Product line (prd_line) wise total sales nikaalo.
+-- Product line (prd_line) wise total sales 
 select p.prd_line,
        sum(sls_sales) as total_sales
        from bronze.crm_sales_details s
@@ -188,7 +187,7 @@ select p.prd_line,
     ON s.sls_prd_key = substring(p.prd_key from 7)
     group by p.prd_line order by total_sales desc
 
---Har customer ka first order date aur total sales amount nikaalo.
+-- first order date aur total sales of each customer
 
 SELECT
     c.cst_id,
@@ -223,7 +222,7 @@ ORDER BY total_sales DESC;
 
 
 
--- Multiple joins (Sales + Product + Customer + Location) ek saath use karke top 10 performing countries dikhao.
+-- top 10 performing countries by using Multiple joins (Sales + Product + Customer + Location) 
 
 SELECT 
     l."CNTRY" AS country,

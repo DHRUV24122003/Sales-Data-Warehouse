@@ -1,13 +1,13 @@
 --Trim function -> removes extra spaces from a  data colummn
 -- LTRIM() / RTRIM()
--- LTRIM() → Sirf left side ke spaces hataata hai
--- RTRIM() → Sirf right side ke spaces hataata hai
+-- LTRIM() → Removes spaces only from the left side
+-- RTRIM() → Removes spaces only from the right side
 
 Select cst_firstname,
 TRIM(cst_firstname) AS cleaned_firstname
 FROM bronze.crm_cust_info limit 10
 
---Upper() and Lower() -> Poori string ko Capital/Lower Letters mein convert karta hai.
+--Upper() and Lower() -> Converts the first name into uppercase and lowercase.
 SELECT 
     cst_firstname,
     UPPER(cst_firstname) AS upper_name,
@@ -107,7 +107,7 @@ SELECT
     EXTRACT(YEAR FROM TO_DATE(sls_order_dt::TEXT, 'YYYYMMDD')) AS order_year,
     SUM(sls_sales) AS total_sales
 FROM bronze.crm_sales_details
-WHERE LENGTH(sls_order_dt::TEXT) = 8          -- Sirf valid 8-digit dates
+WHERE LENGTH(sls_order_dt::TEXT) = 8          -- only valid 8-digit dates
 GROUP BY order_year
 ORDER BY order_year;
 

@@ -105,3 +105,14 @@ select * from bronze.erp_px_cat_g1v2;
 
 
 
+
+--ctes
+SELECT *
+FROM (
+    SELECT 
+        sls_cust_id,
+        SUM(sls_sales) AS total_sales
+    FROM bronze.crm_sales_details
+    GROUP BY sls_cust_id
+) 
+WHERE total_sales > 10000;

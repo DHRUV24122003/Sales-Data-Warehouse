@@ -181,3 +181,5 @@ LEFT JOIN bronze.erp_loc_a101 l
     ON REPLACE(l."CID", '-', '') = c.cst_key
     GROUP BY l."CNTRY" 
 
+
+

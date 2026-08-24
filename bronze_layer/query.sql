@@ -168,3 +168,22 @@ FROM yearly_sales
 ORDER BY sales_year
 
 
+--Customer total sales + Rank (without Window Function)
+
+WITH customer_sales AS (
+    SELECT 
+        sls_cust_id,
+        SUM(sls_sales) AS total_sales
+    FROM bronze.crm_sales_details
+    GROUP BY sls_cust_id
+)
+SELECT 
+    cs1.sls_cust_id,
+    cs1.total_sales,
+    (
+        SELECT COUNT(*) + 1
+        FROM customer_sales cs2
+        WHERE cs2.total_sales > cs1.total_sales
+    ) AS sales_rank
+FROM customer_sales cs1
+ORDER BY sales_rank;

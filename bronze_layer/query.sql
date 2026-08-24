@@ -152,3 +152,19 @@ WHERE total_sales > 50000
 ORDER BY total_sales DESC;
 
  
+ -- Year-wise total sales
+
+
+WITH yearly_sales AS (
+    SELECT 
+        EXTRACT(YEAR FROM TO_DATE(sls_order_dt::TEXT, 'YYYYMMDD')) AS sales_year,
+        SUM(sls_sales) AS total_sales
+    FROM bronze.crm_sales_details
+    WHERE LENGTH(sls_order_dt::TEXT) = 8
+    GROUP BY sales_year
+)
+SELECT *
+FROM yearly_sales
+ORDER BY sales_year
+
+

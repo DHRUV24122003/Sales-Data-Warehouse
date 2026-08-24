@@ -116,3 +116,39 @@ FROM (
     GROUP BY sls_cust_id
 ) 
 WHERE total_sales > 10000;
+
+
+
+
+WITH customer_sales AS (
+    SELECT 
+        sls_cust_id,
+        SUM(sls_sales) AS total_sales
+    FROM bronze.crm_sales_details
+    GROUP BY sls_cust_id
+)
+SELECT *
+FROM customer_sales
+WHERE total_sales > 10000
+ORDER BY total_sales DESC;
+
+
+
+
+
+-- Q2. Product-wise total sales (> 50000)
+
+
+WITH product_sales AS (
+    SELECT 
+        sls_prd_key,
+        SUM(sls_sales) AS total_sales
+    FROM bronze.crm_sales_details
+    GROUP BY sls_prd_key
+)
+SELECT *
+FROM product_sales
+WHERE total_sales > 50000
+ORDER BY total_sales DESC;
+
+ 

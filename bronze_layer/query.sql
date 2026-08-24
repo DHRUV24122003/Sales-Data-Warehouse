@@ -210,3 +210,58 @@ INNER JOIN bronze.crm_cust_info c
     ON cs.sls_cust_id = c.cst_id
 ORDER BY cs.total_sales DESC
 LIMIT 5;
+
+
+
+-- Country-wise total sales
+WITH country_sales AS (
+    SELECT 
+        l."CNTRY" AS country,
+        SUM(s.sls_sales) AS total_sales
+    FROM bronze.crm_sales_details s
+    INNER JOIN bronze.crm_cust_info c
+        ON s.sls_cust_id = c.cst_id
+    LEFT JOIN bronze.erp_loc_a101 l
+        ON REPLACE(l."CID", '-', '') = c.cst_key
+    GROUP BY l."CNTRY"
+)
+SELECT *
+FROM country_sales
+ORDER BY total_sales DESC;
+
+
+
+
+--Multiple CTEs (Product sales → Top 5)
+
+WITH product_sales AS (
+    SELECT 
+        sls_prd_key,
+        SUM(sls_sales) AS total_sales
+    FROM bronze.crm_sales_details
+    GROUP BY sls_prd_key
+),
+top_products AS (
+    SELECT *
+    FROM product_sales
+    ORDER BY total_sales DESC
+    LIMIT 5
+)
+SELECT * FROM top_products;
+
+
+-- Orders greater than Average Order Value
+
+WITH avg_order AS (
+    SELECT AVG(sls_sales) AS average_sales
+    FROM bronze.crm_sales_details
+)
+SELECT 
+    s.sls_ord_num,
+    s.sls_prd_key,
+    s.sls_cust_id,
+    s.sls_sales
+FROM bronze.crm_sales_details s
+CROSS JOIN avg_order a
+WHERE s.sls_sales > a.average_sales
+ORDER BY s.sls_sales DESC;

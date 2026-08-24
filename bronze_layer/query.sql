@@ -265,3 +265,43 @@ FROM bronze.crm_sales_details s
 CROSS JOIN avg_order a
 WHERE s.sls_sales > a.average_sales
 ORDER BY s.sls_sales DESC;
+
+
+
+
+-- Product Line wise total sales
+
+WITH product_line_sales AS (
+    SELECT 
+        p.prd_line,
+        SUM(s.sls_sales) AS total_sales
+    FROM bronze.crm_sales_details s
+    INNER JOIN bronze.crm_prd_info p
+        ON s.sls_prd_key = RIGHT(p.prd_key, 10)
+    GROUP BY p.prd_line
+)
+SELECT *
+FROM product_line_sales
+ORDER BY total_sales DESC;
+
+
+
+-- Customers with more than 5 orders
+WITH customer_orders AS (
+    SELECT 
+        sls_cust_id,
+        COUNT(DISTINCT sls_ord_num) AS total_orders
+    FROM bronze.crm_sales_details
+    GROUP BY sls_cust_id
+    HAVING COUNT(DISTINCT sls_ord_num) > 5
+)
+SELECT 
+    c.cst_id,
+    c.cst_firstname,
+    c.cst_lastname,
+    c.cst_gndr,
+    co.total_orders
+FROM customer_orders co
+INNER JOIN bronze.crm_cust_info c
+    ON co.sls_cust_id = c.cst_id
+ORDER BY co.total_orders DESC;

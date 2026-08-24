@@ -187,3 +187,26 @@ SELECT
     ) AS sales_rank
 FROM customer_sales cs1
 ORDER BY sales_rank;
+
+
+
+
+-- Top 5 customers by sales + Name
+
+
+WITH customer_sales AS (
+    SELECT 
+        sls_cust_id,
+        SUM(sls_sales) AS total_sales
+    FROM bronze.crm_sales_details
+    GROUP BY sls_cust_id
+)
+SELECT 
+    c.cst_firstname,
+    c.cst_lastname,
+    cs.total_sales
+FROM customer_sales cs
+INNER JOIN bronze.crm_cust_info c
+    ON cs.sls_cust_id = c.cst_id
+ORDER BY cs.total_sales DESC
+LIMIT 5;
